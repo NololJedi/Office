@@ -2,7 +2,7 @@ package by.office.data;
 
 import java.util.Objects;
 
-public class StaffTimeWorkingPeriod {
+public class StaffTimeWorkingPeriod implements Comparable<StaffTimeWorkingPeriod> {
 
     private int start;
     private  int end;
@@ -44,5 +44,10 @@ public class StaffTimeWorkingPeriod {
                 "start=" + start +
                 ", end=" + end +
                 '}';
+    }
+
+    @Override
+    public int compareTo(StaffTimeWorkingPeriod object) {
+        return this.start - object.start;
     }
 }

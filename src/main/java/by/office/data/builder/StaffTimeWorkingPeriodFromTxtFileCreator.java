@@ -12,8 +12,7 @@ public class StaffTimeWorkingPeriodFromTxtFileCreator implements StaffTimeWorkin
         if (data == null || data.isEmpty()){
             return Optional.empty();
         }
-        data = data.replaceAll("\r", "");
-        data = data.replaceAll("\n", "");
+        data = clearData(data);
 
         if (!StaffTimeWorkingPeriodStringValidator.isDataValid(data)){
             return Optional.empty();
@@ -29,6 +28,14 @@ public class StaffTimeWorkingPeriodFromTxtFileCreator implements StaffTimeWorkin
         StaffTimeWorkingPeriod period = new StaffTimeWorkingPeriod(start, end);
 
         return Optional.of(period);
+    }
+
+    private String clearData(String data){
+        data = data.trim();
+        data = data.replaceAll("\r", "");
+        data = data.replaceAll("\n", "");
+
+        return data;
     }
 
 }

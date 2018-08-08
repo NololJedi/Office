@@ -7,9 +7,23 @@ public class StaffTimeWorkingPeriodStringValidatorTest {
 
     @Test
     public void isDataValid_ValidData_Success() {
-        String data = "22:00 11:11";
+        String data = "10:30 17:15";
 
     Assert.assertTrue(StaffTimeWorkingPeriodStringValidator.isDataValid(data));
+    }
+
+    @Test
+    public void isDataValid_ValidDataStartHoursOneSymbol_Success() {
+        String data = "3:22 11:11";
+
+        Assert.assertTrue(StaffTimeWorkingPeriodStringValidator.isDataValid(data));
+    }
+
+    @Test
+    public void isDataValid_ValidDataEndHoursOneSymbol_Success() {
+        String data = "08:00 9:07";
+
+        Assert.assertTrue(StaffTimeWorkingPeriodStringValidator.isDataValid(data));
     }
 
     @Test

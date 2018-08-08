@@ -1,73 +1,54 @@
 package by.office.data.analyze;
 
 import by.office.data.StaffTimeWorkingPeriod;
-import by.office.data.builder.StaffTimeWorkingPeriodCreator;
-import by.office.data.builder.StaffTimeWorkingPeriodFromTxtFileCreator;
-import by.office.message.MessageManager;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
-
-import static by.office.message.LoggerMessageManager.*;
 
 public class StaffTimeWorkingPeriodAnalyzer {
 
-  private MessageManager messageManager;
-
-  public StaffTimeWorkingPeriodAnalyzer(MessageManager messageManager) {
-    this.messageManager = messageManager;
-  }
-
-  public void analyze(Optional<List<String>> data) {
-    List<StaffTimeWorkingPeriod> periods = prepareData(data);
-
-    if (periods.isEmpty()) {
-      messageManager.renderMessage(NO_DATA_TO_ANALYZE_MESSAGE_KEY);
-      System.exit(0);
-    }
-
+  public AnalyzeResult analyze(List<StaffTimeWorkingPeriod> periods) {
     List<StaffTimeWorkingPeriod> actualPeriods = Collections.emptyList();
+    List<StaffTimeWorkingPeriod> checkingPeriods;
     int count = 0;
 
     for (int index = 0; index < periods.size(); index++) {
       StaffTimeWorkingPeriod currentPeriod = periods.get(index);
-      actualPeriods = new ArrayList<>();
+      checkingPeriods = new ArrayList<>();
 
       for (int innerIndex = 0; innerIndex < periods.size(); innerIndex++) {
-        StaffTimeWorkingPeriod checkingPeriod = periods.get(index);
+        StaffTimeWorkingPeriod checkingPeriod = periods.get(innerIndex);
         if (innerIndex == index) {
           continue;
         }
         if (checkTwoPeriodsIsInOneRange(currentPeriod, checkingPeriod)) {
-          if (actualPeriods.isEmpty()) {
-            actualPeriods.add(checkingPeriod);
-          }
-          int currentCount = 0;
+          if (checkingPeriods.isEmpty()) {
+            checkingPeriods.add(checkingPeriod);
+          } else {
+            int currentCount = 0;
 
-          for (StaffTimeWorkingPeriod actualPeriod : actualPeriods) {
-            if (checkTwoPeriodsIsInOneRange(checkingPeriod, actualPeriod)) {
-              currentCount++;
+            for (StaffTimeWorkingPeriod actualPeriod : checkingPeriods) {
+
+              if (checkTwoPeriodsIsInOneRange(checkingPeriod, actualPeriod)) {
+                currentCount++;
+              }
+            } // for №3
+            if (currentCount == checkingPeriods.size()) {
+              checkingPeriods.add(checkingPeriod);
             }
-          } // for №3
-          if (currentCount == actualPeriods.size()) {
-            actualPeriods.add(checkingPeriod);
           }
         }
       } // for №2
-      actualPeriods.add(currentPeriod);
-      if (count < actualPeriods.size()) {
-        count = actualPeriods.size();
+      checkingPeriods.add(currentPeriod);
+      if (count < checkingPeriods.size()) {
+        count = checkingPeriods.size();
+        actualPeriods = new ArrayList<>(checkingPeriods);
       }
     } // for №1
 
-    if (actualPeriods.isEmpty()) {
-      messageManager.renderMessage(NO_PERIODS_WERE_FOUND_MESSAGE_KEY);
-    } else {
-      messageManager.renderMessage(COUNT_MESSAGE_KEY, String.valueOf(count));
-      messageManager.renderMessage(PERIODS_MESSAGE_KEY, periods.toString());
-    }
+    Collections.sort(actualPeriods);
+    return new AnalyzeResult(count, actualPeriods);
   }
 
   private boolean checkTwoPeriodsIsInOneRange(
@@ -78,36 +59,18 @@ public class StaffTimeWorkingPeriodAnalyzer {
     int secondStart = second.getStart();
     int secondEnd = second.getEnd();
 
-    return (firstStart <= secondStart && secondStart <= firstEnd)
-        || (firstStart <= secondEnd && secondEnd <= firstEnd)
-        || (secondStart <= firstStart && firstStart <= secondEnd)
-        || (secondStart <= firstEnd && firstEnd <= secondEnd);
-  }
-
-  private List<StaffTimeWorkingPeriod> prepareData(Optional<List<String>> data) {
-    if (!data.isPresent()) {
-      return Collections.emptyList();
+    if (firstStart <= secondStart && secondStart <= firstEnd) {
+      return true;
     }
 
-    List<String> dataToPrepare = data.get();
-    List<String> notValidData = new ArrayList<>();
-    List<StaffTimeWorkingPeriod> periods = new ArrayList<>();
-    StaffTimeWorkingPeriodCreator<String> creator = new StaffTimeWorkingPeriodFromTxtFileCreator();
-
-    for (String value : dataToPrepare) {
-      Optional<StaffTimeWorkingPeriod> currentPeriod = creator.create(value);
-
-      if (currentPeriod.isPresent()) {
-        periods.add(currentPeriod.get());
-      } else {
-        notValidData.add(value);
-      }
+    if (firstStart <= secondEnd && secondEnd <= firstEnd) {
+      return true;
     }
 
-    if (!notValidData.isEmpty()) {
-      messageManager.renderMessage(NOT_VALID_DATA_MESSAGE_KEY, notValidData.toString());
+    if (secondStart <= firstStart && firstStart <= secondEnd) {
+      return true;
     }
 
-    return periods;
+    return secondStart <= firstEnd && firstEnd <= secondEnd;
   }
 }

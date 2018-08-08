@@ -1,6 +1,6 @@
 package by.office;
 
-import by.office.data.analyze.StaffTimeWorkingPeriodAnalyzer;
+import by.office.data.StaffTimeWorkingPeriodDataProcessor;
 import by.office.data.extractor.StaffTimeWorkingPeriodDataExtractor;
 import by.office.data.extractor.StaffTimeWorkingPeriodDataFromTxtFileExtractor;
 import by.office.message.LoggerMessageManager;
@@ -12,8 +12,8 @@ public class Application {
     MessageManager messageManager = new LoggerMessageManager();
     StaffTimeWorkingPeriodDataExtractor extractor =
         new StaffTimeWorkingPeriodDataFromTxtFileExtractor(messageManager);
-    StaffTimeWorkingPeriodAnalyzer analyzer = new StaffTimeWorkingPeriodAnalyzer(messageManager);
+    StaffTimeWorkingPeriodDataProcessor analyzer = new StaffTimeWorkingPeriodDataProcessor(messageManager);
 
-    analyzer.analyze(extractor.extract());
+    analyzer.process(extractor.extract());
   }
 }
